@@ -33,6 +33,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private boolean isFilter(Item item, String text) {
+        if (text.isBlank()) {
+            return false;
+        }
         return item.getAvailable()
                 && (item.getName().toLowerCase().contains(text.toLowerCase())
                 || item.getDescription().toLowerCase().contains(text.toLowerCase()));
@@ -98,12 +101,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<Item> getItemsBySearch(String text) {
-        List<Item> itemList = new ArrayList<>();
-        if (!text.isBlank()) {
-            itemList.addAll(items.values().stream().filter(item -> isFilter(item, text))
-                    .collect(Collectors.toList()));
-        }
-        return itemList;
-
+        return items.values().stream().filter(item -> isFilter(item, text)).collect(Collectors.toList());
     }
 }
