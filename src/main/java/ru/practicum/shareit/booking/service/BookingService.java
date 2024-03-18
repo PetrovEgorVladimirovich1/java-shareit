@@ -4,7 +4,6 @@ import org.springframework.validation.BindingResult;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 
-import java.util.Arrays;
 import java.util.List;
 
 public interface BookingService {

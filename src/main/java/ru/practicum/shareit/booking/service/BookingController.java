@@ -4,12 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * TODO Sprint add-bookings.
@@ -41,13 +39,13 @@ public class BookingController {
     }
 
     @GetMapping("/{bookingId}")
-    public BookingDto getByIdBooking(@PathVariable Long bookingId, @RequestHeader("X-Sharer-User-Id") Long userId){
+    public BookingDto getByIdBooking(@PathVariable Long bookingId, @RequestHeader("X-Sharer-User-Id") Long userId) {
         return bookingService.getByIdBooking(bookingId, userId);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getForItemsBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                        @RequestParam(name = "state", defaultValue = "ALL", required = false) String state) {
+                                                @RequestParam(name = "state", defaultValue = "ALL", required = false) String state) {
         return bookingService.getForItemsBookings(userId, state);
     }
 }
