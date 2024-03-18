@@ -6,8 +6,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.exceptions.FailIdException;
-import ru.practicum.shareit.exceptions.NotEmailException;
 import ru.practicum.shareit.exceptions.ValidationException;
+
+import java.sql.SQLException;
 
 @RestControllerAdvice
 @Slf4j
@@ -22,7 +23,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleNotEmailException(final NotEmailException e) {
+    public ErrorResponse handleSQLException(final SQLException e) {
         log.info(e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
