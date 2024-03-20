@@ -3,19 +3,19 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BindingResult;
 import ru.practicum.shareit.booking.service.BookingRepository;
 import ru.practicum.shareit.enums.Status;
 import ru.practicum.shareit.exceptions.FailIdException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
-import ru.practicum.shareit.validate.Validate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,17 +45,18 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item create(Long userId, Item item, BindingResult bindingResult) {
-        Validate.validate(bindingResult);
+    public ItemDto create(Long userId, ItemDto itemDto) {
+        Item item = ItemMapper.toItem(itemDto);
         userService.getByIdUser(userId);
         item.setOwner(userId);
         log.info("Вещь успешно добавлена. {}", item);
-        return repository.save(item);
+        return ItemMapper.toItemDto(repository.save(item));
     }
 
     @Override
-    public Item update(Long itemId, Long userId, Item item) {
-        Item itemLast = getByIdItem(itemId, userId);
+    public ItemDto update(Long itemId, Long userId, ItemDto itemDto) {
+        Item item = ItemMapper.toItem(itemDto);
+        Item itemLast = ItemMapper.toItem(getByIdItem(itemId, userId));
         if (!Objects.equals(itemLast.getOwner(), userId)) {
             throw new FailIdException("Неверный id!");
         }
@@ -71,7 +72,7 @@ public class ItemServiceImpl implements ItemService {
         item.setId(itemId);
         item.setOwner(userId);
         log.info("Вещь успешно обновлена. {}", item);
-        return repository.save(item);
+        return ItemMapper.toItemDto(repository.save(item));
     }
 
     @Override
@@ -88,24 +89,32 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item getByIdItem(Long itemId, Long userId) {
+    public ItemWithBookingDto getByIdItem(Long itemId, Long userId) {
         userService.getByIdUser(userId);
         Optional<Item> item = repository.findById(itemId);
         if (item.isEmpty()) {
             throw new FailIdException("Неверный id!");
         }
-        return item.get();
+        return ItemMapper.toItemWithBookingDto(item.get(),
+                bookingRepository.getLastBooking(userId, itemId, LocalDateTime.now()),
+                bookingRepository.getNextBooking(userId, LocalDateTime.now(), itemId),
+                commentRepository.findByItemId(itemId).stream()
+                        .map(ItemMapper::toCommentDto)
+                        .collect(Collectors.toList()));
     }
 
     @Override
-    public List<Item> getItemsBySearch(String text) {
-        return repository.findAll().stream().filter(item -> isFilter(item, text)).collect(Collectors.toList());
+    public List<ItemDto> getItemsBySearch(String text) {
+        return repository.findAll().stream()
+                .filter(item -> isFilter(item, text))
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public CommentDto createComment(Comment comment, Long userId, Long itemId, BindingResult bindingResult) {
-        Validate.validate(bindingResult);
-        User user = userService.getByIdUser(userId);
+    public CommentDto createComment(CommentDto commentDto, Long userId, Long itemId) {
+        Comment comment = ItemMapper.toComment(commentDto);
+        User user = UserMapper.toUser(userService.getByIdUser(userId));
         if (bookingRepository.findByBookerAndStatusAndEndBefore(userId, Status.APPROVED, LocalDateTime.now()).isEmpty()) {
             throw new ValidationException("Нельзя оставлять комментарии!");
         }

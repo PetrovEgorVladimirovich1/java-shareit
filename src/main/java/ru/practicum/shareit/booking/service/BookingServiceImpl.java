@@ -3,17 +3,16 @@ package ru.practicum.shareit.booking.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BindingResult;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.enums.Status;
 import ru.practicum.shareit.exceptions.FailIdException;
 import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.service.UserService;
-import ru.practicum.shareit.validate.Validate;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -65,9 +64,9 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDto create(Long userId, Booking booking, BindingResult bindingResult) {
-        Validate.validate(bindingResult);
-        Item item = itemService.getByIdItem(booking.getItemId(), userId);
+    public BookingDto create(Long userId, BookingDto bookingDto) {
+        Booking booking = BookingMapper.toBooking(bookingDto);
+        Item item = ItemMapper.toItem(itemService.getByIdItem(booking.getItemId(), userId));
         if (item.getOwner().equals(userId)) {
             throw new FailIdException("Нельзя создать бронирование на свою вещь!");
         }
@@ -100,7 +99,7 @@ public class BookingServiceImpl implements BookingService {
         }
         log.info("Бронирование успешно обновлено. {}", booking);
         return BookingMapper.toBookingDto(repository.save(booking),
-                itemService.getByIdItem(booking.getItemId(), userId));
+                ItemMapper.toItem(itemService.getByIdItem(booking.getItemId(), userId)));
     }
 
     @Override
@@ -110,7 +109,7 @@ public class BookingServiceImpl implements BookingService {
                 .filter(booking -> booking.getBooker().equals(userId))
                 .sorted(Comparator.comparing(Booking::getStart).reversed())
                 .map(booking -> BookingMapper.toBookingDto(booking,
-                        itemService.getByIdItem(booking.getItemId(), userId)))
+                        ItemMapper.toItem(itemService.getByIdItem(booking.getItemId(), userId))))
                 .collect(Collectors.toList());
         return getBookingsState(bookings, state);
     }
@@ -121,7 +120,7 @@ public class BookingServiceImpl implements BookingService {
         if (booking.isEmpty()) {
             throw new FailIdException("Неверный id!");
         }
-        Item item = itemService.getByIdItem(booking.get().getItemId(), userId);
+        Item item = ItemMapper.toItem(itemService.getByIdItem(booking.get().getItemId(), userId));
         if (!item.getOwner().equals(userId) && !booking.get().getBooker().equals(userId)) {
             throw new FailIdException("Неверный id!");
         }
@@ -134,7 +133,7 @@ public class BookingServiceImpl implements BookingService {
         List<BookingDto> bookings = repository.getForItemsBookings(userId).stream()
                 .sorted(Comparator.comparing(Booking::getStart).reversed())
                 .map(booking -> BookingMapper.toBookingDto(booking,
-                        itemService.getByIdItem(booking.getItemId(), userId)))
+                        ItemMapper.toItem(itemService.getByIdItem(booking.getItemId(), userId))))
                 .collect(Collectors.toList());
         return getBookingsState(bookings, state);
     }

@@ -8,6 +8,7 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 
 /**
@@ -21,6 +22,7 @@ import javax.validation.constraints.Size;
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Positive
     private Long id;
 
     @NotBlank
@@ -28,7 +30,7 @@ public class Item {
     private String name;
 
     @NotBlank
-    @Size(max = 255)
+    @Size(max = 512)
     private String description;
 
     @NotNull
@@ -36,6 +38,7 @@ public class Item {
     private Boolean available;
 
     @Column(name = "owner_id")
+    @Positive
     private Long owner;
 
     @ManyToOne(fetch = FetchType.LAZY)

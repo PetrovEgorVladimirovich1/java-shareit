@@ -35,7 +35,8 @@ public class ItemMapper {
                 item.getAvailable(),
                 BookingMapper.toBookingForItemDto(lastBooking),
                 BookingMapper.toBookingForItemDto(nextBooking),
-                new ArrayList<>(commentDtos)
+                new ArrayList<>(commentDtos),
+                item.getOwner()
         );
     }
 
@@ -44,5 +45,30 @@ public class ItemMapper {
                 comment.getText(),
                 comment.getAuthor().getName(),
                 LocalDateTime.now());
+    }
+
+    public static Item toItem(ItemDto itemDto) {
+        return new Item(itemDto.getId(),
+                itemDto.getName(),
+                itemDto.getDescription(),
+                itemDto.getAvailable(),
+                null,
+                null);
+    }
+
+    public static Item toItem(ItemWithBookingDto itemWithBookingDto) {
+        return new Item(itemWithBookingDto.getId(),
+                itemWithBookingDto.getName(),
+                itemWithBookingDto.getDescription(),
+                itemWithBookingDto.getAvailable(),
+                itemWithBookingDto.getOwner(),
+                null);
+    }
+
+    public static Comment toComment(CommentDto commentDto) {
+        return new Comment(commentDto.getId(),
+                commentDto.getText(),
+                null,
+                null);
     }
 }

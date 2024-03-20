@@ -7,6 +7,7 @@ import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 
 @Data
@@ -17,6 +18,7 @@ import javax.validation.constraints.Size;
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Positive
     private Long id;
 
     @NotBlank
@@ -24,6 +26,7 @@ public class Comment {
     private String text;
 
     @Column(name = "item_id")
+    @Positive
     private Long itemId;
 
     @ManyToOne
