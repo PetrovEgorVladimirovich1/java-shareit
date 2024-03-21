@@ -1,36 +1,39 @@
 package ru.practicum.shareit.item.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BindingResult;
+import ru.practicum.shareit.booking.service.BookingRepository;
+import ru.practicum.shareit.enums.Status;
 import ru.practicum.shareit.exceptions.FailIdException;
+import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.dto.ItemWithBookingDto;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.dto.UserMapper;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
-import ru.practicum.shareit.validate.Validate;
 
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
-    private final Map<Long, Map<Long, Item>> userItems = new HashMap<>();
-
-    private final Map<Long, Item> items = new HashMap<>();
+    private final ItemRepository repository;
 
     private final UserService userService;
 
-    @Autowired
-    public ItemServiceImpl(UserService userService) {
-        this.userService = userService;
-    }
+    private final BookingRepository bookingRepository;
 
-    private long id = 0;
-
-    private long addId() {
-        return ++id;
-    }
+    private final CommentRepository commentRepository;
 
     private boolean isFilter(Item item, String text) {
         if (text.isBlank()) {
@@ -42,27 +45,18 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item create(Long userId, Item item, BindingResult bindingResult) {
-        Validate.validate(bindingResult);
+    public ItemDto create(Long userId, ItemDto itemDto) {
+        Item item = ItemMapper.toItem(itemDto);
         userService.getByIdUser(userId);
-        item.setId(addId());
         item.setOwner(userId);
-        if (userItems.containsKey(userId)) {
-            userItems.get(userId).put(item.getId(), item);
-            items.put(item.getId(), item);
-        } else {
-            Map<Long, Item> itemMap = new HashMap<>();
-            itemMap.put(item.getId(), item);
-            userItems.put(userId, itemMap);
-            items.put(item.getId(), item);
-        }
         log.info("Вещь успешно добавлена. {}", item);
-        return item;
+        return ItemMapper.toItemDto(repository.save(item));
     }
 
     @Override
-    public Item update(Long itemId, Long userId, Item item) {
-        Item itemLast = getByIdItem(itemId, userId);
+    public ItemDto update(Long itemId, Long userId, ItemDto itemDto) {
+        Item item = ItemMapper.toItem(itemDto);
+        Item itemLast = ItemMapper.toItem(getByIdItem(itemId, userId));
         if (!Objects.equals(itemLast.getOwner(), userId)) {
             throw new FailIdException("Неверный id!");
         }
@@ -77,30 +71,56 @@ public class ItemServiceImpl implements ItemService {
         }
         item.setId(itemId);
         item.setOwner(userId);
-        userItems.get(userId).put(item.getId(), item);
-        items.put(item.getId(), item);
         log.info("Вещь успешно обновлена. {}", item);
-        return item;
+        return ItemMapper.toItemDto(repository.save(item));
     }
 
     @Override
-    public List<Item> getItems(Long userId) {
-        if (!userItems.containsKey(userId)) {
+    public List<ItemWithBookingDto> getItems(Long userId) {
+        return repository.findAll().stream()
+                .filter(item -> item.getOwner().equals(userId))
+                .map(item -> ItemMapper.toItemWithBookingDto(item,
+                        bookingRepository.getLastBooking(userId, item.getId(), LocalDateTime.now()),
+                        bookingRepository.getNextBooking(userId, LocalDateTime.now(), item.getId()),
+                        commentRepository.findByItemId(item.getId()).stream()
+                                .map(ItemMapper::toCommentDto)
+                                .collect(Collectors.toList())))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ItemWithBookingDto getByIdItem(Long itemId, Long userId) {
+        userService.getByIdUser(userId);
+        Optional<Item> item = repository.findById(itemId);
+        if (item.isEmpty()) {
             throw new FailIdException("Неверный id!");
         }
-        return new ArrayList<>(userItems.get(userId).values());
+        return ItemMapper.toItemWithBookingDto(item.get(),
+                bookingRepository.getLastBooking(userId, itemId, LocalDateTime.now()),
+                bookingRepository.getNextBooking(userId, LocalDateTime.now(), itemId),
+                commentRepository.findByItemId(itemId).stream()
+                        .map(ItemMapper::toCommentDto)
+                        .collect(Collectors.toList()));
     }
 
     @Override
-    public Item getByIdItem(Long itemId, Long userId) {
-        if (!items.containsKey(itemId)) {
-            throw new FailIdException("Неверный id!");
+    public List<ItemDto> getItemsBySearch(String text) {
+        return repository.findAll().stream()
+                .filter(item -> isFilter(item, text))
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public CommentDto createComment(CommentDto commentDto, Long userId, Long itemId) {
+        Comment comment = ItemMapper.toComment(commentDto);
+        User user = UserMapper.toUser(userService.getByIdUser(userId));
+        if (bookingRepository.findByBookerAndStatusAndEndBefore(userId, Status.APPROVED, LocalDateTime.now()).isEmpty()) {
+            throw new ValidationException("Нельзя оставлять комментарии!");
         }
-        return items.get(itemId);
-    }
-
-    @Override
-    public List<Item> getItemsBySearch(String text) {
-        return items.values().stream().filter(item -> isFilter(item, text)).collect(Collectors.toList());
+        comment.setItemId(itemId);
+        comment.setAuthor(user);
+        log.info("Комментарий успешно добавлен. {}", comment);
+        return ItemMapper.toCommentDto(commentRepository.save(comment));
     }
 }

@@ -1,15 +1,13 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemMapper;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * TODO Sprint add-controllers.
@@ -21,35 +19,37 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping
-    public ItemDto create(@Valid @RequestBody Item item,
-                          @RequestHeader("X-Sharer-User-Id") Long userId,
-                          BindingResult bindingResult) {
-        return ItemMapper.toItemDto(itemService.create(userId, item, bindingResult));
+    public ItemDto create(@Valid @RequestBody ItemDto itemDto,
+                          @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return itemService.create(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
     public ItemDto update(@PathVariable Long itemId,
                           @RequestHeader("X-Sharer-User-Id") Long userId,
-                          @RequestBody Item item) {
-        return ItemMapper.toItemDto(itemService.update(itemId, userId, item));
+                          @RequestBody ItemDto itemDto) {
+        return itemService.update(itemId, userId, itemDto);
     }
 
     @GetMapping
-    public List<ItemDto> getItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return itemService.getItems(userId).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+    public List<ItemWithBookingDto> getItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        return itemService.getItems(userId);
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getByIdItem(@PathVariable Long itemId, @RequestHeader("X-Sharer-User-Id") Long userId) {
-        return ItemMapper.toItemDto(itemService.getByIdItem(itemId, userId));
+    public ItemWithBookingDto getByIdItem(@PathVariable Long itemId, @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return itemService.getByIdItem(itemId, userId);
     }
 
     @GetMapping("/search")
     public List<ItemDto> getItemsBySearch(@RequestParam(name = "text", defaultValue = "", required = false) String text) {
-        return itemService.getItemsBySearch(text).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+        return itemService.getItemsBySearch(text);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto createComment(@Valid @RequestBody CommentDto commentDto,
+                                    @RequestHeader("X-Sharer-User-Id") Long userId,
+                                    @PathVariable Long itemId) {
+        return itemService.createComment(commentDto, userId, itemId);
     }
 }

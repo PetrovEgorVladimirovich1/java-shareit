@@ -1,18 +1,17 @@
 package ru.practicum.shareit.user.service;
 
-import org.springframework.validation.BindingResult;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.List;
 
 public interface UserService {
-    User create(User user, BindingResult bindingResult);
+    UserDto create(UserDto userDto);
 
-    User update(Long userId, User user);
+    UserDto update(Long userId, UserDto userDto);
 
-    List<User> getUsers();
+    List<UserDto> getUsers();
 
-    User getByIdUser(long id);
+    UserDto getByIdUser(long id);
 
     void deleteUser(long id);
 }
