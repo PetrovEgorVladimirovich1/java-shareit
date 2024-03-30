@@ -16,7 +16,8 @@ public class ItemMapper {
                 item.getId(),
                 item.getName(),
                 item.getDescription(),
-                item.getAvailable()
+                item.getAvailable(),
+                item.getRequestId()
         );
     }
 
@@ -36,7 +37,8 @@ public class ItemMapper {
                 BookingMapper.toBookingForItemDto(lastBooking),
                 BookingMapper.toBookingForItemDto(nextBooking),
                 new ArrayList<>(commentDtos),
-                item.getOwner()
+                item.getOwner(),
+                item.getRequestId()
         );
     }
 
@@ -53,7 +55,7 @@ public class ItemMapper {
                 itemDto.getDescription(),
                 itemDto.getAvailable(),
                 null,
-                null);
+                itemDto.getRequestId());
     }
 
     public static Item toItem(ItemWithBookingDto itemWithBookingDto) {
@@ -62,7 +64,7 @@ public class ItemMapper {
                 itemWithBookingDto.getDescription(),
                 itemWithBookingDto.getAvailable(),
                 itemWithBookingDto.getOwner(),
-                null);
+                itemWithBookingDto.getRequestId());
     }
 
     public static Comment toComment(CommentDto commentDto) {

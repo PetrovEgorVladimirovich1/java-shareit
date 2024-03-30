@@ -2,11 +2,12 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.service.BookingRepository;
 import ru.practicum.shareit.enums.Status;
 import ru.practicum.shareit.exceptions.FailIdException;
-import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.exceptions.ValidationExceptionRun;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
@@ -18,6 +19,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -34,15 +36,6 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
 
     private final CommentRepository commentRepository;
-
-    private boolean isFilter(Item item, String text) {
-        if (text.isBlank()) {
-            return false;
-        }
-        return item.getAvailable()
-                && (item.getName().toLowerCase().contains(text.toLowerCase())
-                || item.getDescription().toLowerCase().contains(text.toLowerCase()));
-    }
 
     @Override
     public ItemDto create(Long userId, ItemDto itemDto) {
@@ -76,9 +69,11 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemWithBookingDto> getItems(Long userId) {
-        return repository.findAll().stream()
-                .filter(item -> item.getOwner().equals(userId))
+    public List<ItemWithBookingDto> getItems(Long userId, int from, int size) {
+        userService.getByIdUser(userId);
+        return repository.findByOwner(userId,
+                        PageRequest.of(from / size, size))
+                .stream()
                 .map(item -> ItemMapper.toItemWithBookingDto(item,
                         bookingRepository.getLastBooking(userId, item.getId(), LocalDateTime.now()),
                         bookingRepository.getNextBooking(userId, LocalDateTime.now(), item.getId()),
@@ -104,9 +99,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getItemsBySearch(String text) {
-        return repository.findAll().stream()
-                .filter(item -> isFilter(item, text))
+    public List<ItemDto> getItemsBySearch(String text, Long userId, int from, int size) {
+        userService.getByIdUser(userId);
+        if (text.isBlank()) {
+            return new ArrayList<>();
+        }
+        return repository.findByNameIgnoreCaseContainingOrDescriptionIgnoreCaseContainingAndAvailableTrue(text, text,
+                        PageRequest.of(from / size, size))
+                .stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
@@ -116,7 +116,7 @@ public class ItemServiceImpl implements ItemService {
         Comment comment = ItemMapper.toComment(commentDto);
         User user = UserMapper.toUser(userService.getByIdUser(userId));
         if (bookingRepository.findByBookerAndStatusAndEndBefore(userId, Status.APPROVED, LocalDateTime.now()).isEmpty()) {
-            throw new ValidationException("Нельзя оставлять комментарии!");
+            throw new ValidationExceptionRun("Нельзя оставлять комментарии!");
         }
         comment.setItemId(itemId);
         comment.setAuthor(user);
