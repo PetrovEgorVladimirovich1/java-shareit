@@ -30,12 +30,12 @@ class BookingServiceImplIntegrationTest {
 
     @Test
     void integrationTest() {
-        userService.create(new UserDto(null, "name", "egich-2011@mail.ru"));
-        userService.create(new UserDto(null, "name", "egich-2012@mail.ru"));
-        itemService.create(1L, new ItemDto(null, "name", "description", true,
+        UserDto userDto = userService.create(new UserDto(null, "name", "egich-2011@mail.ru"));
+        UserDto userDto1 = userService.create(new UserDto(null, "name", "egich-2012@mail.ru"));
+        ItemDto itemDto = itemService.create(userDto.getId(), new ItemDto(null, "name", "description", true,
                 null));
-        bookingService.create(2L, new BookingDto(null, LocalDateTime.now().plusSeconds(2), LocalDateTime.now().plusDays(1),
-                null, null, null, 1L, null));
-        assertEquals(1, bookingService.getBookings(2L, "ALL", 0, 1).size());
+        bookingService.create(userDto1.getId(), new BookingDto(null, LocalDateTime.now().plusSeconds(2), LocalDateTime.now().plusDays(1),
+                null, null, null, itemDto.getId(), null));
+        assertEquals(1, bookingService.getBookings(userDto1.getId(), "ALL", 0, 1).size());
     }
 }
