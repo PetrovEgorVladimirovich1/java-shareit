@@ -45,6 +45,12 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.id", is(Integer.parseInt(user.getId().toString()))))
                 .andExpect(jsonPath("$.name", is(user.getName())))
                 .andExpect(jsonPath("$.email", is(user.getEmail())));
+        mvc.perform(post("/users")
+                        .content(objectMapper.writeValueAsString(UserMapper.toUserDto(new User())))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -77,7 +83,6 @@ class UserControllerTest {
     void getByIdUser() throws Exception {
         Mockito.when(userService.getByIdUser(Mockito.anyLong())).thenReturn(UserMapper.toUserDto(user));
         mvc.perform(get("/users/{id}", 1)
-                        .content(objectMapper.writeValueAsString(UserMapper.toUserDto(user)))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))

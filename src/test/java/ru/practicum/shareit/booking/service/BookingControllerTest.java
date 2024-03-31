@@ -59,6 +59,19 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.item", is(bookingDto.getItem())))
                 .andExpect(jsonPath("$.itemId", is(Integer.parseInt(bookingDto.getItemId().toString()))))
                 .andExpect(jsonPath("$.bookerId", is(Integer.parseInt(bookingDto.getBookerId().toString()))));
+        mvc.perform(post("/bookings")
+                        .content(mapper.writeValueAsString(new BookingDto()))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1L))
+                .andExpect(status().isBadRequest());
+        mvc.perform(post("/bookings")
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -67,7 +80,6 @@ class BookingControllerTest {
                 .thenReturn(bookingDto);
         mvc.perform(patch("/bookings/{bookingId}", 1L)
                         .param("approved", "true")
-                        .content(mapper.writeValueAsString(bookingDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -79,6 +91,18 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.item", is(bookingDto.getItem())))
                 .andExpect(jsonPath("$.itemId", is(Integer.parseInt(bookingDto.getItemId().toString()))))
                 .andExpect(jsonPath("$.bookerId", is(Integer.parseInt(bookingDto.getBookerId().toString()))));
+        mvc.perform(patch("/bookings/{bookingId}", 1L)
+                        .param("approved", "true")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+        mvc.perform(patch("/bookings/{bookingId}", 1L)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1L))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -92,6 +116,11 @@ class BookingControllerTest {
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1));
+        mvc.perform(get("/bookings")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -109,6 +138,11 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.item", is(bookingDto.getItem())))
                 .andExpect(jsonPath("$.itemId", is(Integer.parseInt(bookingDto.getItemId().toString()))))
                 .andExpect(jsonPath("$.bookerId", is(Integer.parseInt(bookingDto.getBookerId().toString()))));
+        mvc.perform(get("/bookings/{bookingId}", 1L)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -122,5 +156,10 @@ class BookingControllerTest {
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1));
+        mvc.perform(get("/bookings/owner")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }

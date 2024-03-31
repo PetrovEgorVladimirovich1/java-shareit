@@ -4,9 +4,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exceptions.FailIdException;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Transactional
 @SpringBootTest(
@@ -14,16 +16,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class UserServiceImplIntegrationTest {
     @Autowired
-    private UserService userService;
+    private UserController userController;
 
     @Test
     void integrationTest() {
-        UserDto userDto = userService.create(new UserDto(null, "name", "egich-2014@mail.ru"));
-        assertEquals(userDto, userService.getByIdUser(userDto.getId()));
-        assertEquals(1, userService.getUsers().size());
+        UserDto userDto = userController.create(new UserDto(null, "name", "egich-2014@mail.ru"));
+        assertEquals(userDto, userController.getByIdUser(userDto.getId()));
+        assertEquals(1, userController.getUsers().size());
         userDto.setName("NAME");
-        assertEquals(userService.update(userDto.getId(), userDto), userService.getByIdUser(userDto.getId()));
-        userService.deleteUser(userDto.getId());
-        assertEquals(0, userService.getUsers().size());
+        assertEquals(userController.update(userDto.getId(), userDto), userController.getByIdUser(userDto.getId()));
+        userController.deleteUser(userDto.getId());
+        assertEquals(0, userController.getUsers().size());
+        assertThrows(FailIdException.class, () -> userController.update(0, userDto));
+        assertThrows(FailIdException.class, () -> userController.getByIdUser(0));
     }
 }

@@ -4,11 +4,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exceptions.FailIdException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.service.UserController;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Transactional
 @SpringBootTest(
@@ -16,16 +18,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class ItemServiceImplIntegrationTest {
     @Autowired
-    private ItemService itemService;
+    private ItemController itemController;
 
     @Autowired
-    private UserService userService;
+    private UserController userController;
 
     @Test
     void integrationTest() {
-        UserDto userDto = userService.create(new UserDto(null, "name", "egich-2013@mail.ru"));
-        itemService.create(userDto.getId(), new ItemDto(null, "name", "description", true,
-                null));
-        assertEquals(1, itemService.getItems(userDto.getId(), 0, 1).size());
+        UserDto userDto = userController.create(new UserDto(null, "name", "egich-2013@mail.ru"));
+        itemController.create(new ItemDto(null, "name", "description", true, null),
+                userDto.getId());
+        assertEquals(1, itemController.getItems(userDto.getId(), 0, 1).size());
+        assertThrows(FailIdException.class, () -> itemController.getByIdItem(0L, userDto.getId()));
     }
 }
