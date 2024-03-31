@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.service;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -21,7 +22,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "LEFT JOIN items AS i ON b.item_id = i.id " +
             "LEFT JOIN users AS u ON i.owner_id = u.id " +
             "WHERE u.id = ?1 ", nativeQuery = true)
-    List<Booking> getForItemsBookings(Long userId);
+    List<Booking> getForItemsBookings(Long userId, PageRequest page);
 
     @Query(value = "SELECT B.ID, " +
             "B.START_DATE, " +
@@ -56,4 +57,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     Booking getNextBooking(Long userId, LocalDateTime start, Long itemId);
 
     List<Booking> findByBookerAndStatusAndEndBefore(Long booker, Status status, LocalDateTime end);
+
+    List<Booking> findByBooker(Long booker, PageRequest page);
 }

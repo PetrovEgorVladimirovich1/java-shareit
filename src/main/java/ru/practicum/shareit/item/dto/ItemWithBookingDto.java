@@ -14,11 +14,22 @@ import java.util.List;
 public class ItemWithBookingDto {
     @Positive
     private Long id;
+
     private String name;
+
     private String description;
+
     private Boolean available;
+
     private BookingForItemDto lastBooking;
+
     private BookingForItemDto nextBooking;
+
     private List<CommentDto> comments;
+
+    @Positive
     private Long owner;
+
+    @Positive
+    private Long requestId;
 }
