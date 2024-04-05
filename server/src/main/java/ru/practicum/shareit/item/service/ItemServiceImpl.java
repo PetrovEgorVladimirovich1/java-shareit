@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.service.BookingRepository;
 import ru.practicum.shareit.enums.Status;
@@ -72,7 +73,7 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemWithBookingDto> getItems(Long userId, int from, int size) {
         userService.getByIdUser(userId);
         return repository.findByOwner(userId,
-                        PageRequest.of(from / size, size))
+                        PageRequest.of(from / size, size, Sort.by("id")))
                 .stream()
                 .map(item -> ItemMapper.toItemWithBookingDto(item,
                         bookingRepository.getLastBooking(userId, item.getId(), LocalDateTime.now()),
