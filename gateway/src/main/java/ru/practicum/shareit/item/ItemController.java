@@ -21,19 +21,19 @@ public class ItemController {
 
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody ItemClientDto itemDto,
-                                         @RequestHeader("X-Sharer-User-Id") Long userId) {
+                                         @Positive @RequestHeader("X-Sharer-User-Id") Long userId) {
         return itemClient.create(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
-    public ResponseEntity<Object> update(@PathVariable Long itemId,
-                                         @RequestHeader("X-Sharer-User-Id") Long userId,
+    public ResponseEntity<Object> update(@Positive @PathVariable Long itemId,
+                                         @Positive @RequestHeader("X-Sharer-User-Id") Long userId,
                                          @RequestBody ItemClientDto itemDto) {
         return itemClient.update(itemId, userId, itemDto);
     }
 
     @GetMapping
-    public ResponseEntity<Object> getItems(@RequestHeader("X-Sharer-User-Id") Long userId,
+    public ResponseEntity<Object> getItems(@Positive @RequestHeader("X-Sharer-User-Id") Long userId,
                                            @RequestParam(name = "from", defaultValue = "0")
                                            @PositiveOrZero int from,
                                            @RequestParam(name = "size", defaultValue = "10")
@@ -42,13 +42,14 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ResponseEntity<Object> getByIdItem(@PathVariable Long itemId, @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public ResponseEntity<Object> getByIdItem(@Positive @PathVariable Long itemId,
+                                              @Positive @RequestHeader("X-Sharer-User-Id") Long userId) {
         return itemClient.getByIdItem(itemId, userId);
     }
 
     @GetMapping("/search")
     public ResponseEntity<Object> getItemsBySearch(@RequestParam(name = "text", defaultValue = "", required = false) String text,
-                                                   @RequestHeader("X-Sharer-User-Id") Long userId,
+                                                   @Positive @RequestHeader("X-Sharer-User-Id") Long userId,
                                                    @RequestParam(name = "from", defaultValue = "0")
                                                    @PositiveOrZero int from,
                                                    @RequestParam(name = "size", defaultValue = "10")
@@ -58,8 +59,8 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public ResponseEntity<Object> createComment(@Valid @RequestBody CommentClientDto commentDto,
-                                                @RequestHeader("X-Sharer-User-Id") Long userId,
-                                                @PathVariable Long itemId) {
+                                                @Positive @RequestHeader("X-Sharer-User-Id") Long userId,
+                                                @Positive @PathVariable Long itemId) {
         return itemClient.createComment(commentDto, userId, itemId);
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserClientDto;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 
 @Controller
 @RequestMapping(path = "/users")
@@ -22,7 +23,7 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public ResponseEntity<Object> update(@PathVariable long userId, @RequestBody UserClientDto userDto) {
+    public ResponseEntity<Object> update(@Positive @PathVariable long userId, @RequestBody UserClientDto userDto) {
         return userClient.update(userId, userDto);
     }
 
@@ -32,12 +33,12 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getByIdUser(@PathVariable long id) {
+    public ResponseEntity<Object> getByIdUser(@Positive @PathVariable long id) {
         return userClient.getByIdUser(id);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteUser(@PathVariable("id") long id) {
+    public ResponseEntity<Object> deleteUser(@Positive @PathVariable("id") long id) {
         return userClient.deleteUser(id);
     }
 }

@@ -7,10 +7,6 @@ import ru.practicum.shareit.enums.Status;
 import ru.practicum.shareit.item.dto.ItemForBookingDto;
 import ru.practicum.shareit.user.dto.UserBookerDto;
 
-import javax.validation.constraints.Future;
-import javax.validation.constraints.FutureOrPresent;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 import java.time.LocalDateTime;
 
 /**
@@ -20,15 +16,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BookingDto {
-    @Positive
     private Long id;
 
-    @NotNull
-    @FutureOrPresent
     private LocalDateTime start;
 
-    @NotNull
-    @Future
     private LocalDateTime end;
 
     private Status status;
@@ -37,10 +28,7 @@ public class BookingDto {
 
     private ItemForBookingDto item;
 
-    @NotNull
-    @Positive
     private Long itemId;
 
-    @Positive
     private Long bookerId;
 }

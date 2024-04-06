@@ -5,9 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 /**
@@ -21,15 +18,11 @@ import java.time.LocalDateTime;
 public class ItemRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Positive
     private Long id;
 
-    @NotBlank
-    @Size(max = 512)
     private String description;
 
     @Column(name = "requestor_id")
-    @Positive
     private Long requestor;
 
     private LocalDateTime created;

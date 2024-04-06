@@ -5,14 +5,12 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import ru.practicum.shareit.booking.dto.BookingForItemDto;
 
-import javax.validation.constraints.Positive;
 import java.util.List;
 
 @Data
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class ItemWithBookingDto {
-    @Positive
     private Long id;
 
     private String name;
@@ -27,9 +25,7 @@ public class ItemWithBookingDto {
 
     private List<CommentDto> comments;
 
-    @Positive
     private Long owner;
 
-    @Positive
     private Long requestId;
 }
